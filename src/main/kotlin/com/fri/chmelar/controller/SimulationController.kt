@@ -24,7 +24,6 @@ class SimulationController : Controller() {
         MontyHall(conf.numberOfDoors, conf.replicationCount, changeDecision = false)
     }
 
-
     fun simulate() = runAsync {
         changeDoor.clear()
         keepDoor.clear()
@@ -35,7 +34,7 @@ class SimulationController : Controller() {
                     .subscribeOnFx()
                     .skip(1)
                     .filter { it.iteration % 10 == 0 }
-                    .doOnEach { Thread.sleep(10) }
+                    .doOnEach { Thread.sleep(100) }
                     .doOnComplete { println("KONIEEEC") }
                     .subscribe { experiment ->
                         println(experiment)

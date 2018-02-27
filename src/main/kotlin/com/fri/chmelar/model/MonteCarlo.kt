@@ -27,7 +27,6 @@ abstract class MonteCarlo<T>(private val numberOfReplications:Int) {
 
     fun resume() = valve.onNext(true)
 
-
     fun simulation(): Flowable<T> = Flowable
             .range      (0, numberOfReplications)
             .compose    (FlowableTransformers.valve(valve, true))

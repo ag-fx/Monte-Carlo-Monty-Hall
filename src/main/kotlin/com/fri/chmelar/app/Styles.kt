@@ -1,5 +1,6 @@
 package com.fri.chmelar.app
 
+import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.Stylesheet
 import tornadofx.box
@@ -16,6 +17,11 @@ class Styles : Stylesheet() {
             padding = box(10.px)
             fontSize = 20.px
             fontWeight = FontWeight.BOLD
+        }
+
+        root {
+            prefWidth = 600.px
+            prefHeight = 400.px
         }
     }
 }

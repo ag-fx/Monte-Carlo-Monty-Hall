@@ -2,10 +2,7 @@ package com.fri.chmelar.app
 
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
-import tornadofx.Stylesheet
-import tornadofx.box
-import tornadofx.cssclass
-import tornadofx.px
+import tornadofx.*
 
 class Styles : Stylesheet() {
     companion object {
@@ -13,12 +10,12 @@ class Styles : Stylesheet() {
     }
 
     init {
+        importStylesheet("bootstrapfx.css")
         label and heading {
-            padding = box(10.px)
+            padding  = box(10.px)
             fontSize = 20.px
             fontWeight = FontWeight.BOLD
         }
-
         root {
             prefWidth = 600.px
             prefHeight = 400.px

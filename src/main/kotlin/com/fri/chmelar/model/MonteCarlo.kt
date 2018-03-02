@@ -4,25 +4,42 @@ import hu.akarnokd.rxjava2.operators.FlowableTransformers
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
+import java.util.*
 
 
 /**
-@param T
-class that represents a state of experiment
-@param toExperiment
-function that returns an experiment object
-@param event
-represents an event in simulation
-
-Every simulation runs on new thread thanks to Rx schedulesres
-in event function you'll get an iteration number everytime it's called
-
-toExperiment function has to return T as a result of one exper
+ *  @param T class that represents a state of experiment
  */
 abstract class MonteCarlo<T>(private val numberOfReplications: Int) {
 
-    private val valve = PublishProcessor.create<Boolean>()
     abstract var isRunning: Boolean
+
+    private val seedGenerator = Random()
+
+    protected fun random() =  Random(seedGenerator.nextLong())
+
+    /**
+     * Flow of simulation results that can be subscribed on
+     */
+    fun simulation(): Flowable<T> = Flowable
+            .fromIterable (1..numberOfReplications)
+            .observeOn    (Schedulers.newThread())
+            .compose      (FlowableTransformers.valve(valve, isRunning))
+            .doOnNext     { event() }
+            .map          { toExperiment(it) }
+
+    /**
+     * This class represents one event that occurs in simulation that we are replicating [numberOfReplications] times
+     */
+    abstract fun event()
+
+    /**
+     * @param  iteration  this method will receive the current number of iteration
+     * @return object of experiment i.e. data class Experiment(val iteration:Int, probability:Double)
+     */
+    abstract fun toExperiment(iteration: Int): T
+
+    abstract fun clear()
 
     fun pause() {
         isRunning = false
@@ -34,18 +51,6 @@ abstract class MonteCarlo<T>(private val numberOfReplications: Int) {
         valve.onNext(true)
     }
 
-    fun simulation(): Flowable<T> = Flowable
-            .fromIterable (1..numberOfReplications)
-            .observeOn    (Schedulers.newThread())
-            .compose      (FlowableTransformers.valve(valve, isRunning))
-            .doOnNext     { event(it) }
-            .map          { toExperiment(it) }
-
-    abstract fun event(iteration: Int)
-
-    abstract fun toExperiment(iteration: Int): T
-
-    abstract fun clear()
+    private val valve = PublishProcessor.create<Boolean>()
 
 }
-

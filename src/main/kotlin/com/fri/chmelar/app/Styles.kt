@@ -10,7 +10,6 @@ class Styles : Stylesheet() {
     }
 
     init {
-        importStylesheet("bootstrapfx.css")
         label and heading {
             padding  = box(10.px)
             fontSize = 20.px

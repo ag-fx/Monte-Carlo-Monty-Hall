@@ -10,7 +10,7 @@ import java.util.*
 /**
  *  @param T class that represents a state of experiment
  */
-abstract class MonteCarlo<T>(private val numberOfReplications: Int) {
+abstract class MonteCarlo<Experiment>(private val numberOfReplications: Int) {
 
     abstract var isRunning: Boolean
 
@@ -21,7 +21,7 @@ abstract class MonteCarlo<T>(private val numberOfReplications: Int) {
     /**
      * Flow of simulation results that can be subscribed on
      */
-    fun simulation(): Flowable<T> = Flowable
+    fun simulation(): Flowable<Experiment> = Flowable
             .fromIterable (1..numberOfReplications)
             .observeOn    (Schedulers.newThread())
             .compose      (FlowableTransformers.valve(valve, isRunning))
@@ -37,7 +37,7 @@ abstract class MonteCarlo<T>(private val numberOfReplications: Int) {
      * @param  iteration  this method will receive the current number of iteration
      * @return object of experiment i.e. data class Experiment(val iteration:Int, probability:Double)
      */
-    abstract fun toExperiment(iteration: Int): T
+    abstract fun toExperiment(iteration: Int): Experiment
 
     abstract fun clear()
 

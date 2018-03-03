@@ -16,7 +16,7 @@ class MontyHall(private val numberOfDoors: Int, numberOfIterations: Int, private
 
     override fun toExperiment(iteration: Int) = MontyHallExperiment(iteration, (wins / iteration) * 100, wins, loss, decision)
 
-    override fun event() {
+    override  fun event() {
         val doors = generateDoors()
         val firstGuess = random().nextInt(numberOfDoors)
         val openedDoor = doors
@@ -27,7 +27,8 @@ class MontyHall(private val numberOfDoors: Int, numberOfIterations: Int, private
             MontyHallDecision.ChangeDoor -> {
                 val secondGuess = doors
                         .filter { it.index != firstGuess && it.index != openedDoor.index }
-                        .let { it[random().nextInt(it.size)] }
+                        .let    { it[random().nextInt(it.size)] }
+
                 if (secondGuess.prize == Prize.Car)
                     wins++
                 else

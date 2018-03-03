@@ -18,7 +18,6 @@ import tornadofx.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-
 class SimulationController : Controller() {
 
     private lateinit var changeDoor: MontyHall
@@ -27,8 +26,8 @@ class SimulationController : Controller() {
     val changeDoorData = observableArrayList<XYChart.Data<Number, Number>>()!!
     val keepDoorData = observableArrayList<XYChart.Data<Number, Number>>()!!
 
-    val changeDoorModel  = MontyHallExperimentModel()
-    val keepDoorModel    = MontyHallExperimentModel()
+    val changeDoorModel = MontyHallExperimentModel()
+    val keepDoorModel = MontyHallExperimentModel()
 
     val decisionProperty = SimpleObjectProperty<MontyHallDecision>(MontyHallDecision.ChangeDoor)
     var decision by decisionProperty
@@ -62,20 +61,17 @@ class SimulationController : Controller() {
             changeDoor = MontyHall(numberOfDoors, replicationCount, MontyHallDecision.ChangeDoor)
             keepDoor = MontyHall(numberOfDoors, replicationCount, MontyHallDecision.KeepDoor)
         }
-        listOf(changeDoor.simulation(), keepDoor.simulation()).forEach { simulation ->
 
+        listOf(changeDoor.simulation(), keepDoor.simulation()).forEach { simulation ->
             simulations += simulation
                     .skip(1)
                     .observeOn(Schedulers.io())
                     .filter {
-                       it.iteration % (simulationConfigurationModel.item.replicationCount / 1000.0).toInt() ==0 &&
-                        it.changeDecision == decision
+                        it.iteration % (simulationConfigurationModel.item.replicationCount / 1000.0).toInt() == 0 &&
+                                it.changeDecision == decision
                     }
                     .observeOnFx()
-                    .doOnSubscribe {
-                        simulationRunning = true
-                        clear()
-                    }
+                    .doOnSubscribe { simulationRunning = true }
                     .doOnComplete(::finalize)
                     .subscribeOnFx()
                     .subscribe { experiment ->
@@ -91,10 +87,11 @@ class SimulationController : Controller() {
                             }
                         }
 
-                        upperBound = (round(experiment.probabilityOfWin,1)*1.003)
-                        lowerBound = (round(experiment.probabilityOfWin,1)*0.995)
+                        upperBound = (round(experiment.probabilityOfWin, 1) * 1.004)
+                        lowerBound = (round(experiment.probabilityOfWin, 1) * 0.995)
                     }
         }
+
 
     }
 
@@ -115,8 +112,8 @@ class SimulationController : Controller() {
     fun clear() {
         changeDoorData.clear()
         keepDoorData.clear()
-        changeDoorModel.item = MontyHallExperiment(0,0.0,0.0,0.0,MontyHallDecision.ChangeDoor)
-        keepDoorModel.item   = MontyHallExperiment(0,0.0,0.0,0.0,MontyHallDecision.KeepDoor)
+        changeDoorModel.item = MontyHallExperiment(0, 0.0, 0.0, 0.0, MontyHallDecision.ChangeDoor)
+        keepDoorModel.item = MontyHallExperiment(0, 0.0, 0.0, 0.0, MontyHallDecision.KeepDoor)
         println("clear")
     }
 
@@ -146,14 +143,12 @@ class SimulationConfigurationModel : ItemViewModel<SimulationConfiguration>() {
     val numberOfDoors = bind(SimulationConfiguration::numberOfDoors)
 
     override fun onCommit() {
-        item = SimulationConfiguration(replicationCount.value ?: 10000  , numberOfDoors.value ?: 3)
+        item = SimulationConfiguration(replicationCount.value ?: 10000, numberOfDoors.value ?: 3)
     }
 }
 
 class MontyHallExperimentModel : ItemViewModel<MontyHallExperiment>() {
-    val iteration = bind(MontyHallExperiment::iteration)
     val probabilityOfWin = bind(MontyHallExperiment::probabilityOfWin)
-    val changeDecision = bind(MontyHallExperiment::changeDecision)
 }
 
 fun <A, B> ObservableList<XYChart.Data<Number, Number>>.add(p: Pair<A, B>) = with(p) { add(XYChart.Data(first as Number, second as Number)) }

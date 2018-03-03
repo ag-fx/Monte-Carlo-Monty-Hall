@@ -2,6 +2,7 @@ package com.fri.chmelar.view
 
 import com.fri.chmelar.controller.SimulationController
 import com.fri.chmelar.model.MontyHallDecision
+import com.sun.javafx.binding.ContentBinding.bind
 import javafx.geometry.Insets
 import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
@@ -18,24 +19,29 @@ class MainView : View("Monty Hall via Monte Carlo") {
     private val controller: SimulationController by inject()
 
     private val iterationAxis = NumberAxis()
-    private val estimateAxis  = NumberAxis(0.00,100.0,0.1)
-    private var lineChart        by singleAssign<LineChart<Number, Number>>()
+    private val estimateAxis = NumberAxis(0.00, 100.0, 0.1)
+    private var lineChart by singleAssign<LineChart<Number, Number>>()
     private var changeDoorSeries by singleAssign<XYChart.Series<Number, Number>>()
-    private var keepDoorSeries   by singleAssign<XYChart.Series<Number, Number>>()
+    private var keepDoorSeries by singleAssign<XYChart.Series<Number, Number>>()
 
     override val root = vbox {
         vboxConstraints {
             padding = Insets(20.0)
         }
-        hbox{
+        hbox {
             togglegroup {
                 MontyHallDecision.values().forEach {
-                    radiobutton(it.name, value = it) {
+                    val name = when(it){
+                        MontyHallDecision.KeepDoor   -> "Ponechať dvere"
+                        MontyHallDecision.ChangeDoor -> "Zmeniť dvere"
+                    }
+                    radiobutton(name, value = it) {
                         disableProperty().bind(controller.simulationRunningProperty)
                     }
                 }
                 bind(controller.decisionProperty)
             }
+            spacer()
         }
 
         lineChart = linechart(x = iterationAxis, y = estimateAxis) {
@@ -46,16 +52,13 @@ class MainView : View("Monty Hall via Monte Carlo") {
 
             keepDoorSeries = series("", controller.keepDoorData) {
                 nameProperty().bindBidirectional(controller.keepDoorModel.probabilityOfWin, Converter("Pravedpodonost vyhry bez zmeny"))
-
             }
 
             createSymbols = false
             with(yAxis as NumberAxis) {
                 label = "Pravdepodbnost[%]"
-             //   isAutoRanging = true
                 lowerBoundProperty().bindBidirectional(controller.lowerBoundProperty)
                 upperBoundProperty().bindBidirectional(controller.upperBoundProperty)
-             //   tickLabelFormatter = DecimalTickConverter()
             }
 
             with(xAxis) {
@@ -66,7 +69,11 @@ class MainView : View("Monty Hall via Monte Carlo") {
         }
 
         spacer()
-        controls
+        vbox {
+            controls
+            spacer()
+            buttons
+        }
         spacer()
     }
 
@@ -98,19 +105,34 @@ class MainView : View("Monty Hall via Monte Carlo") {
     }
 
     private val controls = hbox {
-        textfield {
-            promptText = "Počet dverí"
-            bind(controller.simulationConfigurationModel.numberOfDoors)
+        hbox {
+            label("Počet dverí") { paddingRight = 12.0 }
+            spacer()
+            textfield {
+                promptText = "Počet dverí"
+                bind(controller.simulationConfigurationModel.numberOfDoors)
+            }
+
+        }
+
+        spacer()
+        hbox {
+            label("Počet replikácii") { paddingRight = 12.0 }
+            spacer()
+            textfield {
+                promptText = "Počet replikácii"
+                bind(controller.simulationConfigurationModel.replicationCount)
+            }
         }
         spacer()
-        textfield {
-            promptText = "Počet replikácii"
-            bind(controller.simulationConfigurationModel.replicationCount)
-        }
-        spacer()
+    }
+
+    private val buttons = hbox {
+        paddingTop = 12.0
         button("Simuluj") {
             action { again() }
             disableProperty().bind(controller.simulationRunningProperty)
+
         }
         spacer()
         button("Pause") {
@@ -132,7 +154,6 @@ class MainView : View("Monty Hall via Monte Carlo") {
             action(::clearPlot)
             disableProperty().bind(controller.simulationRunningProperty)
         }
-
     }
 
 }

@@ -25,14 +25,16 @@ repositories {
 }
 
 dependencies {
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.2'
     compile 'no.tornado:tornadofx:1.7.14'
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile 'io.reactivex:rxjava:2.1.10'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.9'
     compile 'com.github.thomasnield:rxkotlinfx:2.2.2'
     compile 'io.reactivex.rxjava2:rxkotlin:2.2.0'
     compile "com.github.akarnokd:rxjava2-extensions:0.18.7"
     compile 'org.kordamp.bootstrapfx:bootstrapfx-core:0.2.2'
+
 }
 
 mainClassName = 'com.fri.chmelar.app.MyApp'
@@ -49,5 +51,10 @@ jar {
         exclude 'META-INF/*.SF'
         exclude 'META-INF/*.DSA'
         exclude 'META-INF/*.RSA'
+    }
+}
+kotlin {
+    experimental {
+        coroutines "enable"
     }
 }

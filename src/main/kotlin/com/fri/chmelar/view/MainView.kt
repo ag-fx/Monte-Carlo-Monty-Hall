@@ -1,8 +1,11 @@
 package com.fri.chmelar.view
 
 import com.fri.chmelar.controller.SimulationController
+import com.fri.chmelar.controller.SimulationState
 import com.fri.chmelar.model.MontyHallDecision
+import com.github.thomasnield.rxkotlinfx.bind
 import com.sun.javafx.binding.ContentBinding.bind
+import com.sun.javafx.css.converters.EnumConverter
 import javafx.geometry.Insets
 import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
@@ -29,19 +32,18 @@ class MainView : View("Monty Hall via Monte Carlo") {
             padding = Insets(20.0)
         }
         hbox {
-            togglegroup {
-                MontyHallDecision.values().forEach {
-                    val name = when(it){
-                        MontyHallDecision.KeepDoor   -> "Ponechať dvere"
-                        MontyHallDecision.ChangeDoor -> "Zmeniť dvere"
-                    }
-                    radiobutton(name, value = it) {
-                        disableProperty().bind(controller.simulationRunningProperty)
-                    }
-                }
-                bind(controller.decisionProperty)
+            checkbox("Zmeniť dvere") {
+                disableProperty().bind(controller.simulationRunningProperty)
+                bind(controller.showChangeDoorDataProperty)
             }
-            spacer()
+            checkbox("Ponechať dvere") {
+                disableProperty().bind(controller.simulationRunningProperty)
+                bind(controller.showKeepDoorDataProperty)
+            }
+        }
+        spacer()
+        label {
+            bind(controller.simulationStateProperty, converter = SimStateConverter())
         }
 
         lineChart = linechart(x = iterationAxis, y = estimateAxis) {
@@ -59,6 +61,8 @@ class MainView : View("Monty Hall via Monte Carlo") {
                 label = "Pravdepodbnost[%]"
                 lowerBoundProperty().bindBidirectional(controller.lowerBoundProperty)
                 upperBoundProperty().bindBidirectional(controller.upperBoundProperty)
+                tickUnitProperty().bindBidirectional(controller.tickProperty)
+                autoRangingProperty().bind(controller.autoRangingProperty)
             }
 
             with(xAxis) {
@@ -165,4 +169,11 @@ class Converter(val text: String) : StringConverter<Double>() {
     override fun fromString(string: String?) = string?.split(" ")?.last()?.toDouble() ?: 0.000
 
     private fun format(double: Double?) = double?.let { DecimalFormat("#0.0000").format(double) } ?: 0.0000
+}
+
+class SimStateConverter : StringConverter<SimulationState>() {
+    override fun toString(`object`: SimulationState?) = `object`.toString()
+
+    override fun fromString(string: String?) = SimulationState.values().first { string == it.name }
+
 }

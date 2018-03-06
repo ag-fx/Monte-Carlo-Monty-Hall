@@ -7,14 +7,14 @@ class MontyHall(private val numberOfDoors: Int, numberOfIterations: Int, private
     private var wins = 0.0
     private var loss = 0.0
     override var isRunning = true
-
+    var runs = 1
     private fun generateDoors() = Collections
             .nCopies(numberOfDoors - 1, Door(0, Prize.Animal))
             .plus(Door(0, Prize.Car))
             .shuffled()
             .mapIndexed { index, door -> Door(index, door.prize) }
 
-    override fun toExperiment(iteration: Int) = MontyHallExperiment(iteration, (wins / iteration) * 100, wins, loss, decision)
+    override fun toExperiment(iteration: Int) = MontyHallExperiment(iteration, (wins / runs++) * 100, wins, loss, decision)
 
     override  fun event() {
         val doors = generateDoors()

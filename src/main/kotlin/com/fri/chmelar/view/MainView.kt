@@ -22,7 +22,7 @@ class MainView : View("Monty Hall via Monte Carlo") {
     private val controller: SimulationController by inject()
 
     private val iterationAxis = NumberAxis()
-    private val estimateAxis = NumberAxis(0.00, 100.0, 0.1)
+    private val estimateAxis = NumberAxis()//(0.00, 100.0, 0.1)
     private var lineChart by singleAssign<LineChart<Number, Number>>()
     private var changeDoorSeries by singleAssign<XYChart.Series<Number, Number>>()
     private var keepDoorSeries by singleAssign<XYChart.Series<Number, Number>>()
@@ -59,14 +59,13 @@ class MainView : View("Monty Hall via Monte Carlo") {
             createSymbols = false
             with(yAxis as NumberAxis) {
                 label = "Pravdepodbnost[%]"
-                lowerBoundProperty().bindBidirectional(controller.lowerBoundProperty)
-                upperBoundProperty().bindBidirectional(controller.upperBoundProperty)
-                tickUnitProperty().bindBidirectional(controller.tickProperty)
-                autoRangingProperty().bind(controller.autoRangingProperty)
+                isForceZeroInRange = false
+                isAutoRanging = true
             }
 
-            with(xAxis) {
+            with(xAxis as NumberAxis) {
                 xAxis.label = "Iterácia"
+                isForceZeroInRange = false
                 isAutoRanging = true
             }
 

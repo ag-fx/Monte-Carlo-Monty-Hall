@@ -54,9 +54,6 @@ class SimulationController : Controller() {
     val tickProperty = SimpleDoubleProperty(0.1)
     var tick by tickProperty
 
-    val autoRangingProperty = SimpleBooleanProperty(false)
-    var autoRanging by autoRangingProperty
-
     val upperBoundProperty = SimpleDoubleProperty(0.0)
     var upperBound by upperBoundProperty
 
@@ -65,8 +62,6 @@ class SimulationController : Controller() {
 
     private val simulations = mutableListOf<Disposable>()
 
-    // prvych 30% hodnot nebude v grafe zobrazenych.
-    // zo sto milionov pokusov zobrazim 2 tisic hodnot
     fun simulate() = runAsync {
 
         with(simulationConfigurationModel.item) {
@@ -74,35 +69,30 @@ class SimulationController : Controller() {
             keepDoor = MontyHall(numberOfDoors, replicationCount, MontyHallDecision.KeepDoor)
         }
 
-        var lastChangeDoor: MontyHallExperiment? = null
-        var lastKeepDoor: MontyHallExperiment? = null
 
         listOf(changeDoor.simulation(), keepDoor.simulation()).forEach { simulation ->
             simulations += simulation
                     .skip(1)
                     .observeOn(Schedulers.io())
-                    .filter { it.iteration % 10_000 == 0 }
+                    //.filter { it.iteration % 10_000 == 0 }
                     //.skip(600)
                     .observeOnFx()
-                    .doOnSubscribe { simulationRunning = true; simulationState = SimulationState.WarmingUp }
+                    .doOnSubscribe {
+                        simulationRunning = true
+                        simulationState = SimulationState.WarmingUp
+                        upperBound = 100.0
+                        lowerBound = 0.0
+                    }
                     .doOnComplete(::finalize)
                     .subscribeOnFx()
                     .subscribe { experiment ->
+                        println(experiment)
                         simulationState = SimulationState.Running
                         when (experiment.changeDecision) {
                             MontyHallDecision.KeepDoor -> {
                                 if (showKeepDoorData) {
                                     keepDoorData.add(experiment.iteration to experiment.probabilityOfWin)
                                     keepDoorModel.item = experiment
-                                    lastKeepDoor = experiment
-
-                                    if (!(showKeepDoorData && showChangeDoorData)) {
-                                        autoRanging = false
-                                        upperBound = round(experiment.probabilityOfWin, 1) * 1.05
-                                        lowerBound = round(experiment.probabilityOfWin, 1) * 0.95
-                                        tick = upperBound / lowerBound / 10
-                                        println(tick)
-                                    }
                                 }
 
                             }
@@ -111,30 +101,10 @@ class SimulationController : Controller() {
                                 if (showChangeDoorData) {
                                     changeDoorData.add(experiment.iteration to experiment.probabilityOfWin)
                                     changeDoorModel.item = experiment
-                                    lastChangeDoor = experiment
-
-                                    if (!(showKeepDoorData && showChangeDoorData)) {
-                                        autoRanging = false
-                                        upperBound = (round(experiment.probabilityOfWin, 1) * 1.05)
-                                        lowerBound = (round(experiment.probabilityOfWin, 1) * 0.95)
-                                        tick = upperBound / lowerBound *5
-                                        println(tick)
-
-                                    }
                                 }
                             }
                         }
 
-                        if ((showKeepDoorData && showChangeDoorData && !paused)) {
-                            val up = Math.max(lastChangeDoor?.probabilityOfWin ?: 0.0, lastKeepDoor?.probabilityOfWin
-                                    ?: 0.0)
-                            val down = Math.min(lastChangeDoor?.probabilityOfWin ?: 0.0, lastKeepDoor?.probabilityOfWin
-                                    ?: 0.0)
-                            upperBound = round(1.05*up,   2  )
-                            lowerBound = round(0.95*down, 2)
-                            tick =  round((up / down),2)
-                            println(tick)
-                        }
                     }
         }
 
@@ -167,7 +137,6 @@ class SimulationController : Controller() {
         upperBound = 100.0
         lowerBound = 0.0
         tick = 10.0
-
         println("clear")
     }
 

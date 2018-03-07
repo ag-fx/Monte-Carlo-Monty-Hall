@@ -74,8 +74,8 @@ class SimulationController : Controller() {
             simulations += simulation
                     .skip(1)
                     .observeOn(Schedulers.io())
-                    //.filter { it.iteration % 10_000 == 0 }
-                    //.skip(600)
+                    .filter { it.iteration % 10_000 == 0 }
+                    .skip(600)
                     .observeOnFx()
                     .doOnSubscribe {
                         simulationRunning = true
@@ -86,7 +86,7 @@ class SimulationController : Controller() {
                     .doOnComplete(::finalize)
                     .subscribeOnFx()
                     .subscribe { experiment ->
-                        println(experiment)
+                       // println(experiment)
                         simulationState = SimulationState.Running
                         when (experiment.changeDecision) {
                             MontyHallDecision.KeepDoor -> {

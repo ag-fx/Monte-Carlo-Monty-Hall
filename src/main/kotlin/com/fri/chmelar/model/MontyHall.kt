@@ -8,6 +8,7 @@ class MontyHall(private val numberOfDoors: Int, numberOfIterations: Int, private
     private var loss = 0.0
     override var isRunning = true
     var runs = 1
+
     private fun generateDoors() = Collections
             .nCopies(numberOfDoors - 1, Door(0, Prize.Animal))
             .plus(Door(0, Prize.Car))
@@ -16,18 +17,22 @@ class MontyHall(private val numberOfDoors: Int, numberOfIterations: Int, private
 
     override fun toExperiment(iteration: Int) = MontyHallExperiment(iteration, (wins / runs++) * 100, wins, loss, decision)
 
+    private val guess  = Random(seedGenerator.nextLong())
+    private val openDoor = Random(seedGenerator.nextLong())
+    private val secondGeuss =  Random(seedGenerator.nextLong())
+
     override  fun event() {
         val doors = generateDoors()
-        val firstGuess = random().nextInt(numberOfDoors)
+        val firstGuess = guess.nextInt(numberOfDoors)
         val openedDoor = doors
                 .filter { it.index != firstGuess && it.prize != Prize.Car }
-                .let { it[random().nextInt(it.size)] }
+                .let { it[openDoor.nextInt(it.size)] }
 
         when (decision) {
             MontyHallDecision.ChangeDoor -> {
                 val secondGuess = doors
                         .filter { it.index != firstGuess && it.index != openedDoor.index }
-                        .let    { it[random().nextInt(it.size)] }
+                        .let    { it[secondGeuss.nextInt(it.size)] }
 
                 if (secondGuess.prize == Prize.Car)
                     wins++

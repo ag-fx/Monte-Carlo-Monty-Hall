@@ -14,9 +14,9 @@ abstract class MonteCarlo<Experiment>(private val numberOfReplications: Int) {
 
     abstract var isRunning: Boolean
 
-    private val seedGenerator = Random()
+    protected val seedGenerator = Random()
 
-    protected fun random() =  Random(seedGenerator.nextLong())
+    //protected fun random() =  Random(seedGenerator.nextLong())
 
     /**
      * Flow of simulation results that can be subscribed on
